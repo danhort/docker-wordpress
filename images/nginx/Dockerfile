@@ -24,7 +24,7 @@ RUN chown -R app:app /etc/nginx/certs \
     && chmod -R 755 /etc/nginx/certs
 
 COPY ./conf/nginx.conf /etc/nginx/
-COPY ./conf/magento.conf /etc/nginx/
+COPY ./conf/wordpress.conf /etc/nginx/
 COPY ./conf/default.conf /etc/nginx/conf.d/
 
 RUN mkdir -p /var/www/html \

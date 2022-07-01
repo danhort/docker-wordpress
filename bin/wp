@@ -1,0 +1,3 @@
+#!/bin/bash
+## Run WP cli commands
+bin/cli wp "$@"
