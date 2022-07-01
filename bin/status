@@ -1,0 +1,3 @@
+#!/bin/bash
+## Get containers status
+bin/docker-compose ps

@@ -1,0 +1,8 @@
+#!/bin/bash
+## Stop containers
+
+source env/docker.env
+if [[ $OSTYPE == 'darwin'* ]] && [[ $SYNC_ENABLED ]]; then
+    bin/docker-sync stop
+fi
+bin/docker-compose stop

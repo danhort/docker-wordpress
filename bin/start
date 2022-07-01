@@ -1,0 +1,10 @@
+#!/bin/bash
+## Start containers
+source env/docker.env
+set -o errexit
+
+bin/build
+if [[ $OSTYPE == 'darwin'* ]] && [[ $SYNC_ENABLED ]]; then
+    bin/docker-sync start --logd false
+fi
+bin/docker-compose up -d --remove-orphans "$@"

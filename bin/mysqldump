@@ -1,0 +1,3 @@
+#!/bin/bash
+## Get a database dump
+bin/n98-magerun2 db:dump --stdout "$@"

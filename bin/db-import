@@ -1,0 +1,24 @@
+#!/bin/bash
+## Import database file (.sql, .gz), use an absolute path.
+# shellcheck source=../env/db.env
+source env/db.env
+
+# drop old database create new one
+echo "Resetting database..."
+bin/clinotty mysql -h"${MYSQL_HOST}" -u"${MYSQL_USER}" -p"${MYSQL_PASSWORD}" -e"DROP DATABASE ${MYSQL_DATABASE}; CREATE DATABASE ${MYSQL_DATABASE};"
+
+echo "Importing database dump..."
+
+READ_TOOL=cat
+# Add progress bar if pv exists
+if [[ $(command -v pv) ]]; then
+	READ_TOOL=pv
+fi
+
+if gunzip -t $@; then
+  	$READ_TOOL $@ | gunzip -c | sed -e 's/DEFINER[ ]*=[ ]*[^*]*\*/\*/' | sed -e 's/utf8mb4_0900_ai_ci/utf8mb4_general_ci/g' |  bin/clinotty mysql -h"${MYSQL_HOST}" -u"${MYSQL_USER}" -p"${MYSQL_PASSWORD}" "${MYSQL_DATABASE}"
+else 
+  	$READ_TOOL $@ | sed -e 's/DEFINER[ ]*=[ ]*[^*]*\*/\*/' | sed -e 's/utf8mb4_0900_ai_ci/utf8mb4_general_ci/g' | bin/clinotty mysql -h"${MYSQL_HOST}" -u"${MYSQL_USER}" -p"${MYSQL_PASSWORD}" "${MYSQL_DATABASE}"
+fi
+
+echo "Import complete!"

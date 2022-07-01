@@ -1,0 +1,3 @@
+#!/bin/bash
+## SSH into PHP container
+bin/cli bash

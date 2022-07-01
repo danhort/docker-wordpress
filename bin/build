@@ -1,0 +1,12 @@
+#!/bin/bash
+## Build containers
+
+user_id=1000
+
+# If linux set user id to current user
+if [[ $OSTYPE != 'darwin'* ]]; then
+	user_id=$UID
+    echo $user_id
+fi
+
+bin/docker-compose build --build-arg USER_ID=$user_id 

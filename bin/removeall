@@ -1,0 +1,4 @@
+#!/bin/bash
+## Removes stopped service containers and volumes.
+bin/remove
+bin/removevolumes

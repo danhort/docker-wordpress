@@ -1,0 +1,3 @@
+#!/bin/bash
+## Run grunt commands
+bin/cli grunt "$@"

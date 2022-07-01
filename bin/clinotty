@@ -1,0 +1,4 @@
+#!/bin/bash
+## Run command in PHP conatiner no tty
+[ -z "$1" ] && echo "Please specify a CLI command (ex. ls)" && exit
+bin/docker-compose exec -T phpfpm "$@"

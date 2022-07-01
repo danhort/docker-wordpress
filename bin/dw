@@ -1,0 +1,168 @@
+#!/bin/bash
+
+git="git -C .dw"
+
+params="$@"
+YELLOW='\033[1;33m'
+GREEN='\033[0;32m'
+NC='\033[0m'
+AVIALABLE_PHP_VERSIONS=(7.4 8.1)
+
+usage () {
+    echo -e "
+${YELLOW}Usage:${NC}
+    dw [option]
+    dw command [arguments]
+    
+${YELLOW}Options:${NC}  
+    -h, --help          This help text
+    -v, --version       Get the docker-wordpress version
+    -u, --update        [php version (7.4 | 8.1)] (optional) Updates the docker-wordpress install script
+    -i, --init          [php version (7.4 | 8.1)] Initialize docker-wordpress
+    -is, --init-sync    [php version (7.4 | 8.1)] Initialize with docker-sync
+    "
+}
+
+version () {
+    echo "docker-wordpress version $(getVersion)"
+}
+
+getVersion () {
+    $git symbolic-ref -q --short HEAD || $git describe --tags --exact-match
+}
+
+init () {
+    if [ -z $1 ]; then
+        echo "Please add a PHP version (7.4 or 8.1)";
+        exit;
+    fi
+
+    # Add random compose project name
+    RANDOM_STRING=$(xxd -l7 -ps /dev/urandom)
+    echo  "COMPOSE_PROJECT_NAME=$RANDOM_STRING" > .dw/env/docker.env
+
+    update $1
+
+    if [[ $OSTYPE != 'darwin'* ]]; then
+        cp .dw/samples/docker-compose.dev-linux.yml.sample .dw/docker-compose.dev.yml
+    elif [[ $2 == 'sync' ]]; then
+        cp .dw/samples/docker-compose.dev.yml.sample-for-sync .dw/docker-compose.dev.yml
+        cp .dw/samples/docker-sync.yml.sample .dw/docker-sync.yml
+        perl -pi -e "s/app-sync/$RANDOM_STRING/" .dw/docker-sync.yml
+        perl -pi -e "s/app-sync/$RANDOM_STRING/" .dw/docker-compose.dev.yml
+    else
+        cp .dw/samples/docker-compose.dev.yml.sample .dw/docker-compose.dev.yml
+    fi
+
+    cp .dw/samples/db.env.sample .dw/env/db.env
+
+    # Set sync enabled
+    if [[ $2 == 'sync' ]]; then
+        echo  "SYNC_ENABLED=true" >> .dw/env/docker.env
+    fi
+}
+
+update () {
+    if [ ! -f .dw/env/docker.env ]; then
+        echo "Please initialize this project!"
+        exit; 
+    fi
+
+    PHP_VERSION=$(sed -n 's/^PHP_VERSION=//p' .dw/env/docker.env)
+
+    # If parameter is set or PHP version is not set
+    if [ ! -z $1 ] || [ "$PHP_VERSION" = '' ]; then
+        if [[ ${AVIALABLE_PHP_VERSIONS[*]} =~ (^|[[:space:]])"$1"($|[[:space:]]) ]]; then
+            if [[ $(grep "PHP_VERSION" .dw/env/docker.env) ]]; then
+                # Change PHP version docker variable
+                sed -i "s/PHP_VERSION\=.*/PHP_VERSION=$1/" .dw/env/docker.env
+            else
+                # Add PHP version to docker variables
+                echo "PHP_VERSION=$1" >> .dw/env/docker.env
+            fi
+        else
+            echo "Please add a PHP version (7.4 or 8.1)";
+            exit;
+        fi
+    fi
+    
+
+    # Get the all the available tag versions
+    AVIALABLE_VERSION=$(echo $($git ls-remote --refs -t -q) | tr " " "\n" | grep "refs" | tr "/" "\n" | grep "\.")
+
+    # Get the lates version
+    LATEST_VERSION=$(echo $AVIALABLE_VERSION | awk '{print $NF}')
+
+    if [[ $(getVersion) == $LATEST_VERSION ]]; then
+        echo "You are currently running the latest version ($(getVersion)) of docker-wordpress"
+        return
+    fi
+
+    $git fetch -q
+    $git checkout -q $LATEST_VERSION
+
+    echo "docker-wordpress has been updated to version $LATEST_VERSION."
+    return
+}
+
+run () {
+    if [ ! -d ".dw" ]; then
+        echo "This directory does not seem to have been initialized with docker-wordpress".
+        echo 'Run the command "dw --init".'
+    fi
+    
+    if [ "$params" != "" ]; then
+        cd .dw
+        bin/$params
+    else
+        header
+        usage
+        list
+    fi
+}
+
+list () {
+    cd .dw/bin
+    echo -e "${YELLOW}Available Commands:${NC}"
+    for d in *; do
+        if [[ $d != 'dw' ]]; then
+            SPACE_NUM=$((40-${#d}))
+            SPACE=$(printf "%${SPACE_NUM}s" ' ')
+            echo -e "  ${GREEN}$d${NC}${SPACE}$(grep '##' $d | sed 's/## //')"
+        fi
+    done
+}
+
+header () {
+echo "
+Docker-Wordpress $(getVersion)
+https://github.com/danhort/docker-wordpress
+"                                    
+}
+
+if [ $1 ]; then
+    case "$1" in
+        -h|--help)
+            header 
+            usage 
+            list
+            exit
+            ;;
+        -v|--version)
+            version
+            exit
+            ;;
+        -u|--update) update  $2
+            exit
+            ;;
+        -i|--init) init $2
+            exit
+            ;;
+        -is|--init-sync) init $2 sync
+            exit
+            ;;
+    esac
+    shift
+fi
+
+run

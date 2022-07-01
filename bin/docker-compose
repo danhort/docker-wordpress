@@ -1,0 +1,5 @@
+#!/bin/bash
+## Run docker-compose commands
+source env/docker.env
+export PHP_VERSION
+docker-compose -p $COMPOSE_PROJECT_NAME -f docker-compose.yml -f docker-compose.dev.yml "$@"

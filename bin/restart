@@ -1,0 +1,4 @@
+#!/bin/bash
+## Restart containers
+bin/stop "$@"
+bin/start "$@"

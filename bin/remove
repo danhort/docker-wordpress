@@ -1,0 +1,3 @@
+#!/bin/bash
+## Removes stopped service containers
+bin/docker-compose rm

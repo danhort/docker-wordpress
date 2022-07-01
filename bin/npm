@@ -1,0 +1,3 @@
+#!/bin/bash
+## Run npm commands
+bin/cli npm "$@"

@@ -1,0 +1,3 @@
+#!/bin/bash
+## Run node commands
+bin/cli node "$@"

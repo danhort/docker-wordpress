@@ -1,0 +1,4 @@
+#!/bin/bash
+## Kill containers
+bin/docker-compose stop
+bin/docker-compose  down -v

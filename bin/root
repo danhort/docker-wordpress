@@ -1,0 +1,4 @@
+#!/bin/bash
+## SSH into PHP container as root
+[ -z "$1" ] && echo "Please specify a CLI command (ex. ls)" && exit
+bin/docker-compose exec -u root phpfpm "$@"

@@ -1,0 +1,6 @@
+#!/bin/bash
+## Removes stopped volumes
+source env/docker.env
+docker volume rm "${COMPOSE_PROJECT_NAME}"_dbdata
+docker volume rm "${COMPOSE_PROJECT_NAME}"_sockdata
+docker volume rm "${COMPOSE_PROJECT_NAME}"_ssldata

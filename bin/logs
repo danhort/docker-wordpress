@@ -1,0 +1,3 @@
+#!/bin/bash
+## Display all docker container logs
+bin/docker-compose logs -f --tail=0

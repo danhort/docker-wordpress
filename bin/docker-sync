@@ -1,0 +1,4 @@
+#!/bin/bash
+## Run docker-sync commands
+source env/docker.env
+docker-sync "$@"

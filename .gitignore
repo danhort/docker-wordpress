@@ -1,0 +1,5 @@
+env/*
+!env/.keep
+docker-compose.dev.yml
+docker-sync.yml
+.docker-sync
